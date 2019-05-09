@@ -29,9 +29,11 @@ The subsequent reindex will be incremental so will take signigicantly less time.
 
 ## Others
 
-The sources are re-indexed at 00:30:00 every day, if projects are managed by repo, the sources are synced before re-indexing.
+The sources are re-indexed at 00:30:00 every day, if projects are managed by repo, the sources are synced before re-indexing. And if the source code is used to build, we should ignore the out directory usually.
 
 If you mapped source directory uses soft link, please map the real path too.
+
+If SSH key is needed to sync source, please copy the key to /root/.ssh.
 
 There is a wrapped shell script to run this docker: https://github.com/OakChen/opengrok/raw/master/run.sh.
 
