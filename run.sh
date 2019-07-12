@@ -16,6 +16,7 @@ do
 		echo "-p, --port        Listen port, default 8090"
 		echo "-i, --ignore      Ignore files, support * and more than once, such as '*'.dat, avoid extending by Shell"
 		echo "-I, --ignore-dir  Ignore directory"
+		echo "-H, --history     Enable history"
 		exit
 		;;
 	-s | --source)
@@ -40,6 +41,9 @@ do
 	-I | --ignore-dir)
 		index_opts="$index_opts -i d:$2"
 		shift
+		;;
+	-H | --history)
+		index_opts="$index_opts -H -S"
 		;;
 	*)
 		others="$*"
