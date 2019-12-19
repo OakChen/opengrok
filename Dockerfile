@@ -12,6 +12,10 @@ RUN curl http://storage.googleapis.com/git-repo-downloads/repo > /usr/local/bin/
 
 COPY reindex.sh /scripts/
 COPY reindex.cron /etc/
+COPY embed-font.* /tmp/
+
+RUN cat /tmp/embed-font.sh >> /scripts/index.sh && \
+    rm /tmp/embed-font.sh
 
 RUN crontab /etc/reindex.cron && \
     mkdir -p /var/log/reindex && \
