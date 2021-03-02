@@ -8,7 +8,7 @@ RUN apt-get update -y && \
     rm -rf /var/lib/apt/lists/* && \
     apt-get clean
 
-RUN curl http://storage.googleapis.com/git-repo-downloads/repo > /usr/local/bin/repo && chmod +x /usr/local/bin/repo
+RUN curl https://mirrors.tuna.tsinghua.edu.cn/git/git-repo > /usr/local/bin/repo && chmod +x /usr/local/bin/repo
 
 COPY reindex.sh /scripts/
 COPY reindex.cron /etc/
@@ -23,5 +23,6 @@ RUN crontab /etc/reindex.cron && \
     sed -i "s/-H -P -S -G/-P/" /scripts/index.sh
 
 ENV _JAVA_OPTIONS="-Xmx1G"
+ENV REPO_URL="https://mirrors.tuna.tsinghua.edu.cn/git/git-repo"
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
