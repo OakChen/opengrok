@@ -1,28 +1,22 @@
-FROM opengrok/docker
+FROM opengrok/docker:1.7.13
 MAINTAINER Oak Chen <oak@sfysoft.com>
 
+# 避免Ubuntu 18.04+构建时提示debconf错误
+ENV DEBIAN_FRONTEND noninteractive
+
 RUN apt-get update -y && \
-    apt-get install -y --no-install-recommends cron procps vim locales apt-utils && \
+    apt-get install -y --no-install-recommends procps vim locales apt-utils && \
     sed -i "s/^# en_US.UTF-8/en_US.UTF-8/" /etc/locale.gen && \
     locale-gen && update-locale LANG=en_US.UTF-8 LANGUAGE="en_US:en" && \
     rm -rf /var/lib/apt/lists/* && \
     apt-get clean
 
-RUN curl https://mirrors.tuna.tsinghua.edu.cn/git/git-repo > /usr/local/bin/repo && chmod +x /usr/local/bin/repo
-
-COPY reindex.sh /scripts/
-COPY reindex.cron /etc/
-COPY embed-font.* /tmp/
-
-RUN cat /tmp/embed-font.sh >> /scripts/index.sh && \
-    rm /tmp/embed-font.sh
-
-RUN crontab /etc/reindex.cron && \
-    mkdir -p /var/log/reindex && \
-    sed -i "s/^\(indexer \&\)$/service cron start\n\1/" /scripts/start.sh && \
-    sed -i "s/-H -P -S -G/-P/" /scripts/index.sh
+COPY embed-font.* /scripts/
+# 替代默认字体
+RUN sed -i "s#\(tomcat_popen.wait\)#os.system('/scripts/embed-font.sh')\n    \1#" /scripts/start.py
+# 默认不允许历史记录
+RUN sed -i "/'-H'/d" /scripts/start.py
 
 ENV _JAVA_OPTIONS="-Xmx1G"
-ENV REPO_URL="https://mirrors.tuna.tsinghua.edu.cn/git/git-repo"
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en

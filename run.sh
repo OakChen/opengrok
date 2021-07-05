@@ -1,9 +1,10 @@
 #! /bin/sh
 
 # OpenGrok docker运行脚本
-# Copyright (C) 2019-2019 Oak Chen <oak@sfysoft.com>
+# Copyright (C) 2019-2021 Oak Chen <oak@sfysoft.com>
 
 port=8090
+rest=5000
 until [ $# -eq 0 ]
 do
 	case $1 in
@@ -12,11 +13,15 @@ do
 		echo "-h, --help        Display this information"
 		echo "-s, --source      Source directory"
 		echo "-d, --data        Opengrok data directory, if not specified, inside the docker"
+		echo "-e, --etc         Opengrok configuration directory for both web app and indexer, if not specified, inside the docker"
+		echo "-t, --period      Period of automatic synchronization by minute"
 		echo "-n, --no-home     Don't map $HOME directory"
 		echo "-p, --port        Listen port, default 8090"
+		echo "-r, --rest        Rest API port, default 5000"
 		echo "-i, --ignore      Ignore files, support * and more than once, such as '*'.dat, avoid extending by Shell"
 		echo "-I, --ignore-dir  Ignore directory"
 		echo "-H, --history     Enable history"
+		echo "-m, --mirror      Enable opengrok-mirror(https://github.com/oracle/opengrok/wiki/Repository-synchronization)"
 		exit
 		;;
 	-s | --source)
@@ -27,11 +32,23 @@ do
 		data=$2
 		shift
 		;;
+	-e | --etc)
+		etc=$2
+		shift
+		;;
+	-t | --period)
+		period=$2
+		shift
+		;;
 	-n | --no-home)
 		nohome=true
 		;;
 	-p | --port)
 		port=$2
+		shift
+		;;
+	-r | --rest)
+		rest=$2
 		shift
 		;;
 	-i | --ignore)
@@ -43,7 +60,10 @@ do
 		shift
 		;;
 	-H | --history)
-		index_opts="$index_opts -H -S"
+		index_opts="$index_opts -H"
+		;;
+	-m | --mirror)
+		mirror=true
 		;;
 	*)
 		others="$*"
@@ -65,6 +85,14 @@ if [ "$data" != "" ]; then
 	options="$options -v $data:/opengrok/data"
 fi
 
+if [ "$etc" != "" ]; then
+	options="$options -v $etc:/opengrok/etc"
+fi
+
+if [ "$period" != "" ]; then
+	options="$options -e SYNC_PERIOD_MINUTES=$period"
+fi
+
 if [ -z "$nohome" ]; then
 	options="$options -v $HOME:$HOME"
 fi
@@ -73,15 +101,22 @@ if [ "$port" != "" ]; then
 	options="$options -p $port:8080"
 fi
 
+if [ "$rest" != "" ]; then
+	options="$options -p $rest:5000"
+fi
+
+if [ "$mirror" != "true" ]; then
+	options="$options -e NOMIRROR=1"
+fi
+
 if [ "$index_opts" != "" ]; then
+	# shellcheck disable=SC2089
 	options="$options -e INDEXER_OPT=\"$index_opts\""
 fi
 
 options="$options $others"
-# 无需自动索引，在容器内由cron每天自动运行一次索引
-options="$options -e REINDEX=0"
-
 commandline="docker run -d --restart=always $options oakchen/opengrok"
 
-echo $commandline
-eval $commandline
+echo "$commandline"
+# shellcheck disable=SC2090
+$commandline
