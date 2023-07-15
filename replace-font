@@ -3,10 +3,11 @@
 # shellcheck disable=SC2044
 for file in $(find . -name "*.css"); do
     cp "${file}" "${file}.bak"
-    csstidy "${file}.bak" --compress_colors=false --compress_font-weight=false --preserve_css=true --remove_bslash=false --silent=true --merge_selectors=0 --template=low "${file}"
-    cat << EOF >> "${file}"
-	@import url('https://fonts.googleapis.com/css?family=Roboto+Mono&display=swap');
+    cat << EOF > "${file}"
+@import url('https://fonts.googleapis.com/css?family=Roboto+Mono&display=swap');
+
 EOF
+    csstidy "${file}.bak" --compress_colors=false --compress_font-weight=false --preserve_css=true --remove_bslash=false --silent=true --merge_selectors=0 --template=low >> "${file}"
 
     sed -i 's#font-family:\([^}]*\)monospace#font-family:"Liberation Mono","JetBrains Mono","Roboto Mono","Courier New",\1monospace#g' "${file}"
     sed -i 's#font-family:monospace#font-family:"Liberation Mono","JetBrains Mono","Roboto Mono","Courier New",monospace#g' "${file}"
