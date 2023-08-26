@@ -20,8 +20,8 @@ RUN apt update -y && \
     rm -rf /tmp/*
 
 # 默认不允许历史记录
-RUN sed -i "/'-H'/d" /scripts/start.py
+RUN sed -i '/"-H"/d' /scripts/start.py
 
-ENV _JAVA_OPTIONS="-Xmx1G"
+ENV _JAVA_OPTIONS="-Xmx4G"
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en

@@ -2,6 +2,10 @@
 
 # shellcheck disable=SC2044
 for file in $(find . -name "*.css"); do
+    if [[ "${file}" =~ "jquery" ]]; then
+        continue
+    fi
+
     cp "${file}" "${file}.bak"
     cat << EOF > "${file}"
 @import url('https://fonts.googleapis.com/css?family=Roboto+Mono&display=swap');
@@ -9,10 +13,19 @@ for file in $(find . -name "*.css"); do
 EOF
     csstidy "${file}.bak" --compress_colors=false --compress_font-weight=false --preserve_css=true --remove_bslash=false --silent=true --merge_selectors=0 --template=low >> "${file}"
 
-    sed -i 's#font-family:\([^}]*\)monospace#font-family:"Liberation Mono","JetBrains Mono","Roboto Mono","Courier New",\1monospace#g' "${file}"
-    sed -i 's#font-family:monospace#font-family:"Liberation Mono","JetBrains Mono","Roboto Mono","Courier New",monospace#g' "${file}"
+    sed -i 's#font-family:\([^}]*\)monospace#font-family:"Liberation Mono","JetBrains Mono","Roboto Mono","SF Mono","Courier New",\1monospace#g' "${file}"
+    sed -i 's#font-family:monospace#font-family:"Liberation Mono","JetBrains Mono","Roboto Mono","SF Mono","Courier New",monospace#g' "${file}"
     sed -i 's#font-family:\([^}]*\)sans-serif#font-family:Roboto,\1sans-serif#g' "${file}"
     sed -i 's#font-family:sans-serif#font-family:Roboto,sans-serif#g' "${file}"
     sed -i 's#font-family:\([^}]*\)SunSans#font-family:Roboto,\1SunSans#g' "${file}"
     sed -i 's#font-family:SunSans#font-family:Roboto,SunSans#g' "${file}"
+
+    cat << EOF >> "${file}"
+
+img, form, pre, code, samp
+{
+	font-family: "Liberation Mono", "SF Mono", "JetBrains Mono", "Roboto Mono", "Courier New", monospace;
+}
+EOF
+
 done
